@@ -1,4 +1,4 @@
-package ru.kata.spring.boot_security.demo.model;
+package ru.kata.spring.boot_security.demo.entity;
 
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,13 +15,14 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique=true)
     private String login;
     private String password;
     private String name;
     private int age;
     private String email;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable (name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -38,6 +39,14 @@ public class User implements UserDetails {
         this.password = password;
     }
 
+    public User(String login, String name, int age, String email, String password, Collection<Role> roles) {
+        this.login = login;
+        this.name = name;
+        this.age = age;
+        this.email = email;
+        this.password = password;
+        this.roles = roles;
+    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;

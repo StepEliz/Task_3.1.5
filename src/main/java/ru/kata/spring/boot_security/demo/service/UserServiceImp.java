@@ -1,32 +1,56 @@
 package ru.kata.spring.boot_security.demo.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kata.spring.boot_security.demo.model.Role;
-import ru.kata.spring.boot_security.demo.model.User;
+import ru.kata.spring.boot_security.demo.dto.UserDTO;
+import ru.kata.spring.boot_security.demo.entity.Role;
+import ru.kata.spring.boot_security.demo.entity.User;
 import ru.kata.spring.boot_security.demo.repository.UserRepository;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserServiceImp implements UserService, UserDetailsService {
-    final
-    UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final RoleService roleService;
+    private PasswordEncoder passwordEncoder;
 
-    public UserServiceImp(UserRepository userRepository) {
+    public UserServiceImp(UserRepository userRepository,
+                          RoleService roleService) {
         this.userRepository = userRepository;
+        this.roleService = roleService;
+    }
+
+    @Autowired
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
+    @Transactional
     public void save(User user) {
         userRepository.save(user);
+    }
+
+    public User getUserFromUserDTO(UserDTO userDTO) {
+        if (userDTO.getRole().equals("ROLE_ADMIN")) {
+            return new User(userDTO.getLogin(), userDTO.getName(),
+                    userDTO.getAge(), userDTO.getEmail(),
+                    passwordEncoder.encode(userDTO.getPassword()),
+                    Set.of(roleService.getRoleByRoleName("ROLE_ADMIN")));
+        }
+        return new User(userDTO.getLogin(),userDTO.getName(),
+                userDTO.getAge(), userDTO.getEmail(),
+                passwordEncoder.encode(userDTO.getPassword()),
+                Set.of(roleService.getRoleByRoleName("ROLE_USER")));
     }
 
     @Override
@@ -40,8 +64,20 @@ public class UserServiceImp implements UserService, UserDetailsService {
     }
 
     @Override
-    public void update(User user) {
+    @Transactional
+    public void update(UserDTO userDTO) {
+        User user = getUserById(userDTO.getId());
+        user.setName(userDTO.getName());
+        user.setLogin(userDTO.getLogin());
+        user.setAge(userDTO.getAge());
+        user.setEmail(userDTO.getEmail());
+        if (!userDTO.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        }
         save(user);
+        if (!userDTO.getRole().isEmpty()) {
+            setRoleToUser(userDTO);
+        }
     }
 
     @Override
@@ -50,9 +86,19 @@ public class UserServiceImp implements UserService, UserDetailsService {
     }
 
     @Override
+    public User getUserByName(String name) {
+        return userRepository.getUserByName(name);
+    }
+
+    public User getUserByLogin(String login) {
+        return userRepository.getUserByLogin(login);
+    }
+
+
+    @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.getUserByName(username);
+        User user = userRepository.getUserByLogin(username);
         if (user == null) {
             throw new UsernameNotFoundException(String.format("User '%s' not found", username));
         }
@@ -64,12 +110,12 @@ public class UserServiceImp implements UserService, UserDetailsService {
         return roles.stream().map(r -> new SimpleGrantedAuthority(r.getRole())).toList();
     }
 
-//    @Transactional
-//    public void saveRols(User user, Role role) {
-//        User user1 = getUserById(user.getId());
-//        Role role1 =
-//        Collection<Role> roles = new ArrayList<>();
-//        roles.add(role);
-//        user1.setRoles(roles);
-//    }
+    @Transactional
+    public void setRoleToUser(UserDTO userDTO) {
+        if (userDTO.getRole().equals("ROLE_ADMIN")) {
+            getUserByName(userDTO.getName()).setRoles(Set.of(roleService.getRoleById(1)));
+        } else {
+            getUserByName(userDTO.getName()).setRoles(Set.of(roleService.getRoleById(2)));
+        }
+    }
 }

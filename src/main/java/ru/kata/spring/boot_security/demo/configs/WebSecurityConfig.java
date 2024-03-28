@@ -6,17 +6,12 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import ru.kata.spring.boot_security.demo.model.Role;
-import ru.kata.spring.boot_security.demo.model.User;
-import ru.kata.spring.boot_security.demo.service.RoleServiceImp;
+import ru.kata.spring.boot_security.demo.entity.Role;
+import ru.kata.spring.boot_security.demo.entity.User;
 import ru.kata.spring.boot_security.demo.service.UserServiceImp;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 @Configuration
@@ -24,13 +19,11 @@ import java.util.Set;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final SuccessUserHandler successUserHandler;
     private final UserServiceImp userServiceImp;
-    private final RoleServiceImp roleServiceImp;
+
     public WebSecurityConfig(SuccessUserHandler successUserHandler,
-                             UserServiceImp userServiceImp,
-                             RoleServiceImp roleServiceImp) {
+                             UserServiceImp userServiceImp) {
         this.successUserHandler = successUserHandler;
         this.userServiceImp = userServiceImp;
-        this.roleServiceImp = roleServiceImp;
     }
 
     @Override
@@ -39,7 +32,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/", "/index").authenticated()
                 .antMatchers("/admin/**").access("hasRole('ADMIN')")
-//                .antMatchers("/admin/users").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 .formLogin().successHandler(successUserHandler)
@@ -51,10 +43,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable();
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider(PasswordEncoder passwordEncoder) {
@@ -67,19 +56,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 //    Пароль у пальзователей - 100
     @PostConstruct
     public void createData() {
-        User admin = new User("admin", "admin", 35,
-                "Admin@gmail.com",
-                "$2a$12$qAfnSqp92AVJOs9ot3DZ/erzfpzAfEhzW8Oqbp0AoNupFlADGeOq6");
-        Role adminRole = new Role("ROLE_ADMIN");
-        admin.setRoles(Set.of(adminRole));
+        User admin = new User("admin", "Roman", 35,
+                "Romka@gmail.com",
+                "$2a$12$qAfnSqp92AVJOs9ot3DZ/erzfpzAfEhzW8Oqbp0AoNupFlADGeOq6",
+                Set.of(new Role("ROLE_ADMIN")));
         userServiceImp.save(admin);
 
-        User user = new User("user", "user", 20,
-                "User@gmail.com",
-                "$2a$12$qAfnSqp92AVJOs9ot3DZ/erzfpzAfEhzW8Oqbp0AoNupFlADGeOq6");
-        userServiceImp.save(user);
-        Role userRole = new Role("ROLE_USER");
-        user.setRoles(Set.of(userRole));
+        User user = new User("user", "Bob", 20,
+                "Bob@gmail.com",
+                "$2a$12$qAfnSqp92AVJOs9ot3DZ/erzfpzAfEhzW8Oqbp0AoNupFlADGeOq6",
+                Set.of(new Role("ROLE_USER")));
         userServiceImp.save(user);
     }
 }
