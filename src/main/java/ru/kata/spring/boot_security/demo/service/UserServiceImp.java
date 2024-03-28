@@ -36,20 +36,24 @@ public class UserServiceImp implements UserService, UserDetailsService {
 
     @Override
     @Transactional
-    public void save(User user) {
-        userRepository.save(user);
+    public void save(User user, UserDTO userDTO) {
+        if (userDTO.getPassword().isEmpty()) {
+            userRepository.save(user);
+        } else {
+            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+            userRepository.save(user);
+        }
     }
 
+    @Override
     public User getUserFromUserDTO(UserDTO userDTO) {
         if (userDTO.getRole().equals("ROLE_ADMIN")) {
             return new User(userDTO.getLogin(), userDTO.getName(),
-                    userDTO.getAge(), userDTO.getEmail(),
-                    passwordEncoder.encode(userDTO.getPassword()),
+                    userDTO.getAge(), userDTO.getEmail(), userDTO.getPassword(),
                     Set.of(roleService.getRoleByRoleName("ROLE_ADMIN")));
         }
         return new User(userDTO.getLogin(),userDTO.getName(),
-                userDTO.getAge(), userDTO.getEmail(),
-                passwordEncoder.encode(userDTO.getPassword()),
+                userDTO.getAge(), userDTO.getEmail(), userDTO.getPassword(),
                 Set.of(roleService.getRoleByRoleName("ROLE_USER")));
     }
 
@@ -71,10 +75,7 @@ public class UserServiceImp implements UserService, UserDetailsService {
         user.setLogin(userDTO.getLogin());
         user.setAge(userDTO.getAge());
         user.setEmail(userDTO.getEmail());
-        if (!userDTO.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        }
-        save(user);
+        save(user, userDTO);
         if (!userDTO.getRole().isEmpty()) {
             setRoleToUser(userDTO);
         }
@@ -90,6 +91,7 @@ public class UserServiceImp implements UserService, UserDetailsService {
         return userRepository.getUserByName(name);
     }
 
+    @Override
     public User getUserByLogin(String login) {
         return userRepository.getUserByLogin(login);
     }
@@ -110,6 +112,7 @@ public class UserServiceImp implements UserService, UserDetailsService {
         return roles.stream().map(r -> new SimpleGrantedAuthority(r.getRole())).toList();
     }
 
+    @Override
     @Transactional
     public void setRoleToUser(UserDTO userDTO) {
         if (userDTO.getRole().equals("ROLE_ADMIN")) {

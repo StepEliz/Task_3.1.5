@@ -33,7 +33,7 @@ public class AdminController {
 
     @PostMapping(value = "/create")
     public String create(@ModelAttribute("user") UserDTO userDTO) {
-        userService.save(userService.getUserFromUserDTO(userDTO));
+        userService.save(userService.getUserFromUserDTO(userDTO), userDTO);
         return "redirect:/admin/users";
     }
 

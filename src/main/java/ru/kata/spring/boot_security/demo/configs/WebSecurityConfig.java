@@ -7,8 +7,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import ru.kata.spring.boot_security.demo.dto.UserDTO;
 import ru.kata.spring.boot_security.demo.entity.Role;
 import ru.kata.spring.boot_security.demo.entity.User;
+import ru.kata.spring.boot_security.demo.service.RoleServiceImp;
 import ru.kata.spring.boot_security.demo.service.UserServiceImp;
 
 import javax.annotation.PostConstruct;
@@ -19,11 +21,14 @@ import java.util.Set;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final SuccessUserHandler successUserHandler;
     private final UserServiceImp userServiceImp;
+    private final RoleServiceImp roleServiceImp;
 
     public WebSecurityConfig(SuccessUserHandler successUserHandler,
-                             UserServiceImp userServiceImp) {
+                             UserServiceImp userServiceImp,
+                             RoleServiceImp roleServiceImp) {
         this.successUserHandler = successUserHandler;
         this.userServiceImp = userServiceImp;
+        this.roleServiceImp = roleServiceImp;
     }
 
     @Override
@@ -53,19 +58,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return authenticationProvider;
     }
 
-//    Пароль у пальзователей - 100
     @PostConstruct
     public void createData() {
-        User admin = new User("admin", "Roman", 35,
+        Role roleAdmin = new Role("ROLE_ADMIN");
+        roleServiceImp.save(roleAdmin);
+        Role roleUser = new Role("ROLE_USER");
+        roleServiceImp.save(roleUser);
+        UserDTO userDTOAdmin = new UserDTO("admin", "Roman", 35,
                 "Romka@gmail.com",
-                "$2a$12$qAfnSqp92AVJOs9ot3DZ/erzfpzAfEhzW8Oqbp0AoNupFlADGeOq6",
-                Set.of(new Role("ROLE_ADMIN")));
-        userServiceImp.save(admin);
-
-        User user = new User("user", "Bob", 20,
+                "100",
+                "ROLE_ADMIN");
+        userServiceImp.save(userServiceImp.getUserFromUserDTO(userDTOAdmin), userDTOAdmin);
+        UserDTO userDTOUser = new UserDTO("user", "Bob", 20,
                 "Bob@gmail.com",
-                "$2a$12$qAfnSqp92AVJOs9ot3DZ/erzfpzAfEhzW8Oqbp0AoNupFlADGeOq6",
-                Set.of(new Role("ROLE_USER")));
-        userServiceImp.save(user);
+                "100",
+                "ROLE_USER");
+        userServiceImp.save(userServiceImp.getUserFromUserDTO(userDTOUser), userDTOUser);
     }
 }
