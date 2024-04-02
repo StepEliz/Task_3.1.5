@@ -13,9 +13,10 @@ import ru.kata.spring.boot_security.demo.dto.UserDTO;
 import ru.kata.spring.boot_security.demo.entity.Role;
 import ru.kata.spring.boot_security.demo.entity.User;
 import ru.kata.spring.boot_security.demo.repository.UserRepository;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class UserServiceImp implements UserService, UserDetailsService {
@@ -30,7 +31,7 @@ public class UserServiceImp implements UserService, UserDetailsService {
     }
 
     @Autowired
-    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+    private void setPasswordEncoder(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -47,14 +48,8 @@ public class UserServiceImp implements UserService, UserDetailsService {
 
     @Override
     public User getUserFromUserDTO(UserDTO userDTO) {
-        if (userDTO.getRole().equals("ROLE_ADMIN")) {
-            return new User(userDTO.getLogin(), userDTO.getName(),
-                    userDTO.getAge(), userDTO.getEmail(), userDTO.getPassword(),
-                    Set.of(roleService.getRoleByRoleName("ROLE_ADMIN")));
-        }
-        return new User(userDTO.getLogin(),userDTO.getName(),
-                userDTO.getAge(), userDTO.getEmail(), userDTO.getPassword(),
-                Set.of(roleService.getRoleByRoleName("ROLE_USER")));
+        return new User(userDTO.getLogin(), userDTO.getName(), userDTO.getAge(),
+                userDTO.getEmail(), userDTO.getPassword(), userDTO.getRole());
     }
 
     @Override
@@ -87,18 +82,12 @@ public class UserServiceImp implements UserService, UserDetailsService {
     }
 
     @Override
-    public User getUserByName(String name) {
-        return userRepository.getUserByName(name);
-    }
-
-    @Override
     public User getUserByLogin(String login) {
         return userRepository.getUserByLogin(login);
     }
 
 
     @Override
-    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.getUserByLogin(username);
         if (user == null) {
@@ -115,10 +104,16 @@ public class UserServiceImp implements UserService, UserDetailsService {
     @Override
     @Transactional
     public void setRoleToUser(UserDTO userDTO) {
-        if (userDTO.getRole().equals("ROLE_ADMIN")) {
-            getUserByName(userDTO.getName()).setRoles(Set.of(roleService.getRoleById(1)));
-        } else {
-            getUserByName(userDTO.getName()).setRoles(Set.of(roleService.getRoleById(2)));
+        ArrayList<Role> roles = new ArrayList<>(roleService.getAllRole());
+        ArrayList<Role> userDTORole = new ArrayList<>(userDTO.getRole());
+        ArrayList<Role> userRoles = new ArrayList<>();
+        for (Role role : roles) {
+            for (Role userRole : userDTORole) {
+                if (userRole.equals(role)) {
+                    userRoles.add(role);
+                }
+            }
         }
+        getUserByLogin(userDTO.getLogin()).setRoles(userRoles);
     }
 }

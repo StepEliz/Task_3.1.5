@@ -7,35 +7,29 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import ru.kata.spring.boot_security.demo.dto.UserDTO;
-import ru.kata.spring.boot_security.demo.entity.Role;
-import ru.kata.spring.boot_security.demo.entity.User;
-import ru.kata.spring.boot_security.demo.service.RoleServiceImp;
-import ru.kata.spring.boot_security.demo.service.UserServiceImp;
-
-import javax.annotation.PostConstruct;
-import java.util.Set;
+import ru.kata.spring.boot_security.demo.service.RoleService;
+import ru.kata.spring.boot_security.demo.service.UserService;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final SuccessUserHandler successUserHandler;
-    private final UserServiceImp userServiceImp;
-    private final RoleServiceImp roleServiceImp;
+    private final UserService userService;
+    private final RoleService roleService;
 
     public WebSecurityConfig(SuccessUserHandler successUserHandler,
-                             UserServiceImp userServiceImp,
-                             RoleServiceImp roleServiceImp) {
+                             UserService userService,
+                             RoleService roleService) {
         this.successUserHandler = successUserHandler;
-        this.userServiceImp = userServiceImp;
-        this.roleServiceImp = roleServiceImp;
+        this.userService = userService;
+        this.roleService = roleService;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/", "/index").authenticated()
+                .antMatchers("/user").access("hasRole('USER')")
                 .antMatchers("/admin/**").access("hasRole('ADMIN')")
                 .anyRequest().authenticated()
                 .and()
@@ -54,25 +48,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public DaoAuthenticationProvider daoAuthenticationProvider(PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setPasswordEncoder(passwordEncoder);
-        authenticationProvider.setUserDetailsService(userServiceImp);
+        authenticationProvider.setUserDetailsService(userService);
         return authenticationProvider;
-    }
-
-    @PostConstruct
-    public void createData() {
-        Role roleAdmin = new Role("ROLE_ADMIN");
-        roleServiceImp.save(roleAdmin);
-        Role roleUser = new Role("ROLE_USER");
-        roleServiceImp.save(roleUser);
-        UserDTO userDTOAdmin = new UserDTO("admin", "Roman", 35,
-                "Romka@gmail.com",
-                "100",
-                "ROLE_ADMIN");
-        userServiceImp.save(userServiceImp.getUserFromUserDTO(userDTOAdmin), userDTOAdmin);
-        UserDTO userDTOUser = new UserDTO("user", "Bob", 20,
-                "Bob@gmail.com",
-                "100",
-                "ROLE_USER");
-        userServiceImp.save(userServiceImp.getUserFromUserDTO(userDTOUser), userDTOUser);
     }
 }

@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.kata.spring.boot_security.demo.entity.Role;
 import ru.kata.spring.boot_security.demo.repository.RoleRepository;
 
+import java.util.Collection;
+
 @Service
 public class RoleServiceImp implements RoleService{
     private final RoleRepository roleRepository;
@@ -21,12 +23,7 @@ public class RoleServiceImp implements RoleService{
     }
 
     @Override
-    public Role getRoleById(long id) {
-        return roleRepository.getById(id);
-    }
-
-    @Override
-    public Role getRoleByRoleName(String name) {
-        return roleRepository.getRoleByRole(name);
+    public Collection<Role> getAllRole() {
+        return roleRepository.findAll();
     }
 }

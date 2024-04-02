@@ -21,13 +21,14 @@
     <label for="password">Enter password: </label>
     <input type="password" th:field="*{password}" id="password"/>
     <br/>
-    <label for="role">Enter admin: </label>
-    <input type="text" list="dish" th:field="*{role}" id="role"/>
-    <datalist id="dish">
-        <option value="ROLE_ADMIN" label="Admin">
-        <option value="ROLE_USER" label="User">
-        </option>
-    </datalist>
+    <p>
+        <label>Roles:
+            <input type="checkbox" name="roles"
+                   th:each="role : ${roles}"
+                   th:text="${role.role}"
+                   th:value="${role.id}" />
+        </label>
+    </p>
     <input type="submit" th:value="Create"/>
 </form>
 
