@@ -7,4 +7,5 @@ import java.util.Collection;
 public interface RoleService {
     void save(Role role);
     Collection<Role> getAllRole();
+    Role getRoleById(Long id);
 }

@@ -98,22 +98,38 @@ public class UserServiceImp implements UserService, UserDetailsService {
     }
 
     private Collection<? extends GrantedAuthority> rolToAuthority(Collection<Role> roles) {
-        return roles.stream().map(r -> new SimpleGrantedAuthority(r.getRole())).toList();
+        return roles.stream().map(r -> new SimpleGrantedAuthority(r.getName())).toList();
     }
 
     @Override
     @Transactional
     public void setRoleToUser(UserDTO userDTO) {
         ArrayList<Role> roles = new ArrayList<>(roleService.getAllRole());
-        ArrayList<Role> userDTORole = new ArrayList<>(userDTO.getRole());
         ArrayList<Role> userRoles = new ArrayList<>();
-        for (Role role : roles) {
-            for (Role userRole : userDTORole) {
-                if (userRole.equals(role)) {
-                    userRoles.add(role);
+        if (!userDTO.getRole().isEmpty()) {
+            ArrayList<Role> userDTORole = new ArrayList<>(userDTO.getRole());
+            for (Role role : roles) {
+                for (Role userRole : userDTORole) {
+                    if (role.toString().equals(userRole.toString())) {
+                        userRoles.add(role);
+                    }
                 }
             }
+        } else {
+            userRoles.add(roles.get(2));
         }
         getUserByLogin(userDTO.getLogin()).setRoles(userRoles);
+    }
+
+    @Override
+    public void setRoleToUserDTO(Collection<String> role, UserDTO userDTO) {
+        List<Role> roleList = new ArrayList<>();
+        for (String roleId : role) {
+            Long id = Long.parseLong(roleId);
+            if (roleService.getRoleById(id) != null) {
+                roleList.add(roleService.getRoleById(id));
+            }
+        }
+        userDTO.setRole(roleList);
     }
 }

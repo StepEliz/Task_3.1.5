@@ -7,8 +7,8 @@ import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import javax.annotation.PostConstruct;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 public class DBConfig {
@@ -26,15 +26,19 @@ public class DBConfig {
         roleService.save(roleAdmin);
         Role roleUser = new Role("ROLE_USER");
         roleService.save(roleUser);
+        List<Role> roles = new ArrayList<>();
+        roles.add(roleAdmin);
         UserDTO userDTOAdmin = new UserDTO("admin", "Roman", 35,
                 "Romka@gmail.com",
                 "100",
-                new HashSet<>(Set.of(roleAdmin)));
+                roles);
         userService.save(userService.getUserFromUserDTO(userDTOAdmin), userDTOAdmin);
+        roles.clear();
+        roles.add(roleUser);
         UserDTO userDTOUser = new UserDTO("user", "Bob", 20,
                 "Bob@gmail.com",
                 "100",
-                new HashSet<>(Set.of(roleUser)));
+                roles);
         userService.save(userService.getUserFromUserDTO(userDTOUser), userDTOUser);
     }
 }

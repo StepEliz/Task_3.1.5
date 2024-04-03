@@ -10,9 +10,7 @@ import ru.kata.spring.boot_security.demo.entity.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 @Controller
@@ -35,14 +33,18 @@ public class AdminController {
 
     @GetMapping (value = "/new")
     public String newUser(Model model) {
-        model.addAttribute("user", new UserDTO());
-        Collection<Role> roles = roleService.getAllRole();
+        ArrayList<Role> roles = new ArrayList<>(roleService.getAllRole());
         model.addAttribute("roles", roles);
+        UserDTO userDTO = new UserDTO();
+        userDTO.setRole(roles.stream().filter(role -> role.getId() == 2).toList());
+        model.addAttribute("user", userDTO);
         return "admin/new";
     }
 
     @PostMapping(value = "/create")
-    public String create(@ModelAttribute("user") UserDTO userDTO) {
+    public String create(@ModelAttribute("user") UserDTO userDTO,
+                         @RequestParam(value = "roles") Collection<String> roles) {
+        userService.setRoleToUserDTO(roles,userDTO);
         userService.save(userService.getUserFromUserDTO(userDTO), userDTO);
         return "redirect:/admin/users";
     }
@@ -51,8 +53,9 @@ public class AdminController {
     public String update(@RequestParam(value = "id") int id, Model model) {
         User user = userService.getUserById(id);
         UserDTO userDTO = new UserDTO(user.getLogin(), user.getName(), user.getAge(),
-                user.getEmail(), user.getPassword(), new HashSet<>(Set.of(new Role())));
+                user.getEmail(), user.getPassword(), new LinkedList<>());
         userDTO.setId((long) id);
+        userDTO.setRole(user.getRoles().stream().toList());
         model.addAttribute("user", userDTO);
         Collection<Role> roles = roleService.getAllRole();
         model.addAttribute("roles", roles);
@@ -61,8 +64,8 @@ public class AdminController {
 
     @PatchMapping(value = "/users")
     public String edit(@ModelAttribute("user") UserDTO userDTO,
-                       @ModelAttribute("roles") Collection<Role> roles) {
-        userDTO.setRole(roles);
+                       @RequestParam(value = "roles") Collection<String> roles) {
+        userService.setRoleToUserDTO(roles, userDTO);
         userService.update(userDTO);
         return "redirect:/admin/users";
     }
