@@ -1,14 +1,14 @@
 package ru.kata.spring.boot_security.demo.configs;
 
 import org.springframework.context.annotation.Configuration;
-import ru.kata.spring.boot_security.demo.dto.UserDTO;
 import ru.kata.spring.boot_security.demo.entity.Role;
+import ru.kata.spring.boot_security.demo.entity.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Configuration
 public class DBConfig {
@@ -26,19 +26,19 @@ public class DBConfig {
         roleService.save(roleAdmin);
         Role roleUser = new Role("ROLE_USER");
         roleService.save(roleUser);
-        List<Role> roles = new ArrayList<>();
+        Set<Role> roles = new HashSet<>();
         roles.add(roleAdmin);
-        UserDTO userDTOAdmin = new UserDTO("admin", "Roman", 35,
+        User userAdmin = new User("admin", "Roman", 35,
                 "Romka@gmail.com",
                 "100",
                 roles);
-        userService.save(userService.getUserFromUserDTO(userDTOAdmin), userDTOAdmin);
+        userService.saveNewUser(userAdmin);
         roles.clear();
         roles.add(roleUser);
-        UserDTO userDTOUser = new UserDTO("user", "Bob", 20,
+        User userUser = new User("user", "Bob", 20,
                 "Bob@gmail.com",
                 "100",
                 roles);
-        userService.save(userService.getUserFromUserDTO(userDTOUser), userDTOUser);
+        userService.saveNewUser(userUser);
     }
 }

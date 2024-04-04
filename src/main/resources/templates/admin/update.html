@@ -29,7 +29,7 @@
                    th:each="role : ${roles}"
                    th:text="${role.name}"
                    th:value="${role.id}"
-                   th:checked="${user.role.contains(role)}"
+                   th:checked="${user.roles.contains(role)}"
             />
         </label>
     </p>
