@@ -32,7 +32,7 @@ public class AdminController {
 
     @GetMapping (value = "/new")
     public String newUser(Model model) {
-        model.addAttribute("roles", new ArrayList<>(roleService.getAllRole()));
+        model.addAttribute("roles", roleService.getAllRole());
         model.addAttribute("user", new User());
         return "admin/new";
     }
@@ -46,7 +46,7 @@ public class AdminController {
     }
 
     @GetMapping(value = "/update")
-    public String update(@RequestParam(value = "id") int id, Model model) {
+    public String update(@RequestParam(value = "id") long id, Model model) {
         model.addAttribute("user", userService.getUserById(id));
         model.addAttribute("roles", roleService.getAllRole());
         return "admin/update";
@@ -61,13 +61,13 @@ public class AdminController {
     }
 
     @GetMapping(value = "/delete")
-    public String delete(@RequestParam(value = "id") int id, Model model) {
+    public String delete(@RequestParam(value = "id") long id, Model model) {
         model.addAttribute("user", userService.getUserById(id));
         return "admin/delete";
     }
 
     @DeleteMapping(value = "/{id}")
-    public String remove(@ModelAttribute("id") int id) {
+    public String remove(@ModelAttribute("id") long id) {
         userService.deleteUser(id);
         return "redirect:/admin/users";
     }
