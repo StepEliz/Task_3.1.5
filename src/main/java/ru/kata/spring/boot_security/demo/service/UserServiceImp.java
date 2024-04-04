@@ -7,7 +7,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kata.spring.boot_security.demo.entity.Role;
 import ru.kata.spring.boot_security.demo.entity.User;
 import ru.kata.spring.boot_security.demo.repository.UserRepository;
 
@@ -16,13 +15,10 @@ import java.util.*;
 @Service
 public class UserServiceImp implements UserService, UserDetailsService {
     private final UserRepository userRepository;
-    private final RoleService roleService;
     private PasswordEncoder passwordEncoder;
 
-    public UserServiceImp(UserRepository userRepository,
-                          RoleService roleService) {
+    public UserServiceImp(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.roleService = roleService;
     }
 
     @Autowired
@@ -72,21 +68,5 @@ public class UserServiceImp implements UserService, UserDetailsService {
     @Override
     public List<User> getUsers() {
         return userRepository.findAll();
-    }
-
-    @Override
-    @Transactional
-    public void setRoleToUser(User user, Set<String> role) {
-        Set<Role> roles = roleService.findAllById(roleService.getSetRoleIdBySetString(role));
-        Set<Long> roleSet = roleService.getSetRoleIdBySetString(role);
-        Set<Role> userRoles = new HashSet<>();
-        for (Role rol : roles) {
-            for (Long userRole : roleSet) {
-                if (rol.getId().equals(userRole)) {
-                    userRoles.add(rol);
-                }
-            }
-        }
-        user.setRoles(userRoles);
     }
 }

@@ -32,35 +32,30 @@ public class AdminController {
 
     @GetMapping (value = "/new")
     public String newUser(Model model) {
-        ArrayList<Role> roles = new ArrayList<>(roleService.getAllRole());
-        model.addAttribute("roles", roles);
-        User user = new User();
-        user.setRoles(Set.of(roleService.getRoleById(2)));
-        model.addAttribute("user", user);
+        model.addAttribute("roles", new ArrayList<>(roleService.getAllRole()));
+        model.addAttribute("user", new User());
         return "admin/new";
     }
 
     @PostMapping(value = "/create")
     public String create(@ModelAttribute("user") User user,
-                         @RequestParam(value = "roles") Set<String> roles) {
-        userService.setRoleToUser(user, roles);
+                         @RequestParam(value = "roles") Set<Role> roles) {
+        user.setRoles(roles);
         userService.saveNewUser(user);
         return "redirect:/admin/users";
     }
 
     @GetMapping(value = "/update")
     public String update(@RequestParam(value = "id") int id, Model model) {
-        User user = userService.getUserById(id);
-        model.addAttribute("user", user);
-        Collection<Role> roles = roleService.getAllRole();
-        model.addAttribute("roles", roles);
+        model.addAttribute("user", userService.getUserById(id));
+        model.addAttribute("roles", roleService.getAllRole());
         return "admin/update";
     }
 
     @PatchMapping(value = "/users")
     public String edit(@ModelAttribute("user") User user,
-                       @RequestParam(value = "roles") Set<String> roles) {
-        userService.setRoleToUser(user, roles);
+                       @RequestParam(value = "roles") Set<Role> roles) {
+        user.setRoles(roles);
         userService.update(user);
         return "redirect:/admin/users";
     }

@@ -28,26 +28,4 @@ public class RoleServiceImp implements RoleService{
     public Set<Role> getAllRole() {
         return new HashSet<>(roleRepository.findAll());
     }
-
-    @Override
-    public Role getRoleById(long id) {
-        return roleRepository.getById(id);
-    }
-
-    @Override
-    public Set<Role> findAllById(Set<Long> s) {
-        return roleRepository.findAllById(s);
-    }
-
-    @Override
-    public Set<Long> getSetRoleIdBySetString(Set<String> stringSet) {
-        Set<Long> setRoleId = new HashSet<>();
-        for (String roleId : stringSet) {
-            long id = Long.parseLong(roleId);
-            if (getRoleById(id) != null) {
-                setRoleId.add(id);
-            }
-        }
-        return setRoleId;
-    }
 }
