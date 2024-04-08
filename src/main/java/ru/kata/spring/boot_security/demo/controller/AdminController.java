@@ -30,13 +30,16 @@ public class AdminController {
         model.addAttribute("users", userService.getUsers());
         model.addAttribute("user", userService.getUserByLogin(user.getName()));
         model.addAttribute("formUser", new User());
-        return "admin/usersBootstrap";
+        model.addAttribute("roles", roleService.getAllRole());
+        return "admin/users";
     }
 
     @GetMapping("/new")
-    public String newUser(@ModelAttribute("user") User user, Model model) {
+    public String newUser(@ModelAttribute("user") User user, Model model,
+                          Principal currentUser) {
+        model.addAttribute("currentUser", userService.getUserByLogin(currentUser.getName()));
         model.addAttribute("roles", roleService.getAllRole());
-        return "admin/newBoot";
+        return "admin/new";
     }
 
     @PostMapping()
@@ -45,23 +48,10 @@ public class AdminController {
         return "redirect:/admin/users";
     }
 
-//    @GetMapping (value = "/new")
-//    public String newUser(Model model) {
-//        model.addAttribute("roles", roleService.getAllRole());
-//        model.addAttribute("user", new User());
-//        return "admin/newBoot";
-//    }
-//
-//    @PostMapping
-//    public String create(@ModelAttribute("user") User user,
-//                         @RequestParam(value = "roles") Set<Role> roles) {
-//        user.setRoles(roles);
-//        userService.saveNewUser(user);
-//        return "redirect:/admin/users";
-//    }
-
     @PatchMapping("/{id}")
-    public String updateUser(@ModelAttribute("user") User user) {
+    public String updateUser(@ModelAttribute("user") User user,
+                             @RequestParam(value = "roles") Set<Role> roles) {
+        user.setRoles(roles);
         userService.update(user);
         return "redirect:/admin/users";
     }
@@ -71,31 +61,4 @@ public class AdminController {
         userService.deleteUser(id);
         return "redirect:/admin/users";
     }
-
-//    @GetMapping(value = "/update")
-//    public String update(@RequestParam(value = "id") long id, Model model) {
-//        model.addAttribute("user", userService.getUserById(id));
-//        model.addAttribute("roles", roleService.getAllRole());
-//        return "admin/update";
-//    }
-
-//    @PatchMapping(value = "/{id}")
-//    public String edit(@ModelAttribute("user") User user,
-//                       @RequestParam(value = "roles") Set<Role> roles) {
-//        user.setRoles(roles);
-//        userService.update(user);
-//        return "redirect:/admin/users";
-//    }
-//
-//    @GetMapping(value = "/delete")
-//    public String delete(@RequestParam(value = "id") long id, Model model) {
-//        model.addAttribute("user", userService.getUserById(id));
-//        return "admin/delete";
-//    }
-//
-//    @DeleteMapping(value = "/{id}")
-//    public String remove(@ModelAttribute("id") long id) {
-//        userService.deleteUser(id);
-//        return "redirect:/admin/users";
-//    }
 }
