@@ -15,22 +15,20 @@ import ru.kata.spring.boot_security.demo.service.RoleService;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final SuccessUserHandler successUserHandler;
     private final UserDetailsService userDetailsService;
-    private final RoleService roleService;
 
     public WebSecurityConfig(SuccessUserHandler successUserHandler,
-                             UserDetailsService userDetailsService,
-                             RoleService roleService) {
+                             UserDetailsService userDetailsService) {
         this.successUserHandler = successUserHandler;
         this.userDetailsService = userDetailsService;
-        this.roleService = roleService;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/user").access("hasRole('USER')")
-                .antMatchers("/admin/**").access("hasRole('ADMIN')")
+                .antMatchers("/api/user/**").access("hasRole('USER')")
+                .antMatchers("/api/user/**").access("hasRole('ADMIN')")
+                .antMatchers("/api/**").access("hasRole('ADMIN')")
                 .anyRequest().authenticated()
                 .and()
                 .formLogin().successHandler(successUserHandler)
